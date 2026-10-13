@@ -1,0 +1,75 @@
+# Z01_std_add_head URDF → XML 生成配置（量产加头版，继承 Z01_std 的量产配置）
+# 头部/踝部补丁与 motor 规则对齐 t4_std_add_head.xml；armature 取自 csv 手工填写值。
+# 注意：joints/motors/extras 列表整体替换继承值，patches 沿继承链累加。
+
+extends: ../Z01_std/urdf_to_xml.yaml
+
+default:
+  joint: {armature: null}   # 无默认 armature，逐关节规则见下
+
+joints:                     # armature 来自 csv 手工填写值（URDF 无此属性）
+  - {pattern: "*_shoulder_*",  armature: 0.0027}
+  - {pattern: "*_elbow*",      armature: 0.0027}
+  - {pattern: "*_wrist_yaw",   armature: 0.0027}
+  - {pattern: "*_wrist_*",     armature: 0.005521}
+  - {pattern: "waist_pitch",   armature: 0.0027}
+  - {pattern: "waist_roll",    armature: 0.0027}
+  - {pattern: "waist_yaw",     armature: 0.041}
+  - {pattern: "*_hip_pitch",   armature: 0.041}
+  - {pattern: "*_hip_roll",    armature: 0.041}
+  - {pattern: "*_hip_yaw",     armature: 0.041}
+  - {pattern: "*_knee*",       armature: 0.041}
+  - {pattern: "*_ankle_pitch", armature: 0.0077733}
+  - {pattern: "*_ankle_roll",  armature: 0.0026244}
+  - {pattern: "*_ankle_1",     armature: 0.0027}   # 供 parallel_ankle 继承（本模型无此关节）
+  - {pattern: "*_ankle_2",     armature: 0.0027}   # 供 parallel_ankle 继承（本模型无此关节）
+  - {pattern: "head_pitch",    armature: 0.005521}
+  - {pattern: "head_yaw",      armature: 0.005521}
+
+motors:
+  rules:                      # 覆盖继承的规则（列表整体替换）
+    - {pattern: "waist_pitch", ctrlrange: 7200}
+    - {pattern: "waist_roll",  ctrlrange: 7200}
+    - {pattern: "head_*",      ctrlrange: 12}   # 对齐 t4_std_add_head.xml
+  order: [head_yaw, head_pitch]   # 头电机置前（对齐手写 t4_std_add_head.xml 执行器顺序）
+
+# 手工补丁（仅 --final 输出 Z01_std_add_head.xml 时应用；patches 沿 extends 链累加，
+# 装饰调试几何已由 Z01_std 的 patches 提供，此处不再重复列出）
+patches:
+  # --- 删除 fixed 关节折叠残留（导入器对球体省略 type 属性，用 not(@type) 选择）---
+  - {op: remove, xpath: "worldbody/body[@name='torso_link']/geom[not(@type)]"}
+  - {op: remove, xpath: "worldbody/.//body[@name='head_yaw_link']/geom[not(@type)]"}
+  - {op: remove, xpath: "worldbody/.//body[@name='left_ankle_roll_link']/geom[@type='box']"}
+  - {op: remove, xpath: "worldbody/.//body[@name='right_ankle_roll_link']/geom[@type='box']"}
+  # --- 手工调优值 ---
+  - {op: set, xpath: "worldbody/.//body[@name='head_pitch_link']", set: {pos: "0.00155 0 0.3155"}}
+  # --- 脚底碰撞：7 个 capsule 方案（替换 URDF 转录的 3 个 box）---
+  - xpath: "worldbody/.//body[@name='left_ankle_roll_link']"
+    append: |
+      <geom name="left_foot1_collision" type="capsule" size="0.01" fromto="0.12 -0.030 -0.0245 0.05 -0.030 -0.0245"/>
+      <geom name="left_foot2_collision" type="capsule" size="0.01" fromto="-0.046 -0.020 -0.0245 0.133 -0.020 -0.0245"/>
+      <geom name="left_foot3_collision" type="capsule" size="0.01" fromto="-0.056 -0.01 -0.0245 0.14 -0.01 -0.0245"/>
+      <geom name="left_foot4_collision" type="capsule" size="0.01" fromto="-0.056 0 -0.0245 0.143 0 -0.0245"/>
+      <geom name="left_foot5_collision" type="capsule" size="0.01" fromto="-0.056 0.01 -0.0245 0.14 0.01 -0.0245"/>
+      <geom name="left_foot6_collision" type="capsule" size="0.01" fromto="-0.046 0.020 -0.0245 0.133 0.020 -0.0245"/>
+      <geom name="left_foot7_collision" type="capsule" size="0.01" fromto="0.12 0.030 -0.0245 0.05 0.030 -0.0245"/>
+      <!-- Sole-centre reference used by the velocity task (foot_height / foot_clearance / foot_slip). -->
+      <site name="left_foot" pos="0.0435 0 -0.0245" size="0.01"/>
+  - xpath: "worldbody/.//body[@name='right_ankle_roll_link']"
+    append: |
+      <geom name="right_foot1_collision" type="capsule" size="0.01" fromto="0.12 -0.030 -0.0245 0.05 -0.030 -0.0245"/>
+      <geom name="right_foot2_collision" type="capsule" size="0.01" fromto="-0.046 -0.020 -0.0245 0.133 -0.020 -0.0245"/>
+      <geom name="right_foot3_collision" type="capsule" size="0.01" fromto="-0.056 -0.01 -0.0245 0.14 -0.01 -0.0245"/>
+      <geom name="right_foot4_collision" type="capsule" size="0.01" fromto="-0.056 0 -0.0245 0.143 0 -0.0245"/>
+      <geom name="right_foot5_collision" type="capsule" size="0.01" fromto="-0.056 0.01 -0.0245 0.14 0.01 -0.0245"/>
+      <geom name="right_foot6_collision" type="capsule" size="0.01" fromto="-0.046 0.020 -0.0245 0.133 0.020 -0.0245"/>
+      <geom name="right_foot7_collision" type="capsule" size="0.01" fromto="0.12 0.030 -0.0245 0.05 0.030 -0.0245"/>
+      <!-- Sole-centre reference used by the velocity task (foot_height / foot_clearance / foot_slip). -->
+      <site name="right_foot" pos="0.0435 0 -0.0245" size="0.01"/>
+
+extras:
+  # 深度相机挂在 head_yaw_link（导入器折叠 fixed 关节后该 body 仍在，位于 head_pitch_link 下）
+  - xpath: "worldbody/.//body[@name='head_yaw_link']"
+    append: |
+      <camera name="depth_cam" pos="0.069 0.01 0.068"
+              xyaxes="0 -1 0 0 0 1" fovy="58.29" resolution="64 36"/>
