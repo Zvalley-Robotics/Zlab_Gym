@@ -1,4 +1,4 @@
-# zlab_gym — Z01_std_add_head Motion Tracking & Velocity RL Base
+# Zlab_Gym — A Motion Imitation & Basic Locomotion Training Framework for the Z01 Robot, Enabling Users to Train Custom Motion Models by Adapting the Framework
 
 A minimal secondary-development framework built on
 [mjlab](https://github.com/mujocolab/mjlab) (`mjlab==1.2.0`) + MuJoCo.
