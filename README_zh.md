@@ -1,4 +1,4 @@
-# zlab_gym — Z01_std_add_head 动作模仿 & 速度跟踪 RL 基础框架
+# Zlab_Gym — 针对Z01机器人的动作模仿 & 基础行走训练框架，让使用者可以通过改框架训练自己所需的运动模型
 
 基于 [mjlab](https://github.com/mujocolab/mjlab)（`mjlab==1.2.0`）+ MuJoCo 的精简二次开发框架。
 统一注册**一个机器人**（`Z01_std_add_head`，29 个自由度，策略实际控制 27 个）、
