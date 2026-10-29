@@ -10,6 +10,10 @@ INSTALL_REQUIRES = [
     # "scikit-learn",
     # "coacd",
     # "torch",  # 由用户按 CUDA 版本自行安装（参考 README）
+    "mujoco==3.8.0",
+    "warp-lang==1.12.0",
+    "mujoco-warp==3.8.0",
+    "scipy"
 ]
 
 # Installation operation
